@@ -19,7 +19,7 @@ sys.path.insert(1, root_dir)
 
 from lc_config_db import Session_lc_config,engine_lc_config
 
-from models.vessel import Vessel
+from models.vessel import Vessel, Tank, File
 
 
 class VesselAdapterStorage():
@@ -45,29 +45,75 @@ class VesselAdapterStorage():
     def add_new_vessel(self, data):
         try:
             session = Session_lc_config()
+            tanksPropos = data['tanksProps']
+            images_array = data['images']
+            print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",images_array)
+            # f = open("/home/olfa/Desktop/test.txt", "w")
+            # f.write(str(images_array))
+            # f.close()
+            
+            # print("*************************",type(images_array))
+            #print(tanksPropos)
             new_vessel = Vessel(
-                name=data['name'],
-                imo = data['imo'],
-                vtype = data ['vtype'],
-                flag = data ['flag'],
-                yearbuilt = data ['yearbuilt'],
-                shipyard = data ['shipyard'],
-                owner = data ['owner'],
-                operator = data ['operator'],
-                vclass = data ['vclass'],
-                atex = data['atex'],
-                ais = data ['ais'],
-                mmsi = data['mmsi'],
-                grt = data['grt'],
-                dwt = data['dwt'],
-                capacity = data['capacity'],
-                length = data['length'],
-                beam = data['beam'],
-                draft = data['draft'],
-                
-            )
+                name=data['Name'],
+                imo = data['IMO'],
+                vtype = data ['Type'],
+                flag = data ['Flag'],
+                yearbuilt = data ['YearBuilt'],
+                shipyard = data ['Shipyard'],
+                owner = data ['Owner'],
+                operator = data ['Operator'],
+                vclass = data ['Class'],
+                atex = data['Atex'],
+                ais = data ['AIS'],
+                mmsi = data['MMSI'],
+                grt = data['GRT'],
+                dwt = data['DWT'],
+                capacity = data['Capacity'],
+                length = data['Length'],
+                beam = data['Beam'],
+                draft = data['Draft'],
+                DraftUnit = data ['DraftUnit'],
+                BeamUnit = data['BeamUnit'],
+                LengthUnit = data['LengthUnit'],
+                techDetailsFileName = data['techDetails']['_fileNames'],
+                linearityFileName = data['linearity']['_fileNames'],
+                q88FileName = data['q88']['_fileNames'],
+                sireReportFileName = data['sireReport']['_fileNames'],
+                            )
             session.add(new_vessel)
             session.commit()
+
+            #save tanks and file names
+            session = Session_lc_config()
+            query = 'select id from vessel order by id desc limit 1;'
+            res = engine_lc_config.execute(query)
+            last_id = res.fetchone()
+            # print("========================", last_id[0])
+
+
+            #save tanks
+            for t in tanksPropos:
+                # print("taaaaaaaaaaaaaaaaaaaaaaank",t)
+                new_tank = Tank(
+                    tank_name =  t['tankName'],
+                    volume = t['tankVolume'] ,
+                    tonnage = t ['tonnage'],
+                    issloptank = t['isSlopTank'],
+                    id_vessel = int(last_id[0])
+                )
+                session.add(new_tank)
+                session.commit()
+
+            #save image file names
+            for img_name in images_array:
+                new_file = File(
+                    file_name = img_name,
+                    id_vessel = int(last_id[0])
+                )
+                session.add(new_file)
+                session.commit()
+
         finally:
             session.close()
 

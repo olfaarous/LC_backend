@@ -36,22 +36,14 @@ def get_a_vessel(id):
 
 def save_new_vessel(data):
     try:
-        vessel = vessel_adapter_storage.search_vessel_by_name(data)
-        if not vessel:
-            vessel_adapter_storage.add_new_vessel(data)
-            response_object = {
-                'response': True,
-                'status': 'success',
-                'message': 'Successfully registered.'
-            }
-            return response_object, 201
-        else:
-            response_object = {
-                'response': False,
-                'status': 'fail',
-                'message': 'Vessel already exists. Please Log in.',
-            }
-            return response_object, 409
+        vessel_adapter_storage.add_new_vessel(data)
+        response_object = {
+            'response': True,
+            'status': 'success',
+            'message': 'Successfully registered.'
+        }
+        return response_object, 201
+        
     except SQLAlchemyError as e:
         log.exception("Adding new vessel exception", exc_info=e)
         response_object = {
@@ -60,7 +52,6 @@ def save_new_vessel(data):
             'message': 'Vessel can’t be created du to technical issues'
         }
         return response_object, 500
-
 
 
 def save_changes(data):
